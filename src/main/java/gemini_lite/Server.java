@@ -3,7 +3,7 @@ package gemini_lite;
 import java.io.*;
 import java.net.*;
 
-// in order to run in windows powershell:
+// in order to run in Windows powershell:
 // mvn clean package (this will create the updated jar if there are any updates)
 // java -cp target/bcs2110-2025.jar gemini_lite.Server
 

@@ -10,7 +10,7 @@ import java.net.*;
 public class Client {
     public static void main(String[] args) throws Throwable {
         if (args.length < 1) {
-            System.err.println("Usage: TerribleClient <uri>");
+            System.err.println("You need to run with a URI argument : Client <uri>");
             System.exit(1);
         }
 
@@ -23,7 +23,7 @@ public class Client {
         var port = uri.getPort();
         if (port == -1) {
             port = 1958;
-
+            System.err.println("Port not specified, using default port " + port);
         }
 
         try (final var socket = new Socket(host, port)) {
@@ -39,7 +39,7 @@ public class Client {
                     }
                 } else {
                     System.err.println(rep);
-                    System.exit(1);
+                    System.exit(Integer.parseInt(rep.substring(0, 2)));
                 }
             }
         }
