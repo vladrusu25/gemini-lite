@@ -2,8 +2,6 @@ package gemini_lite;
 
 import java.io.*;
 import java.net.*;
-
-
 // run
 // java -cp target/bcs2110-2025.jar gemini_lite.Client gemini-lite://demo.svc.leastfixedpoint.nl/
 // java -cp target/bcs2110-2025.jar gemini_lite.Client gemini-lite://localhost/
