@@ -1,8 +1,8 @@
 # Project Report
 
-Author: YOUR NAME HERE
-Email: YOUR EMAIL ADDRESS HERE
-Student ID number: STUDENT ID NUMBER HERE
+Author: Vlad Rusu
+Email: v.rusu@student.maastrichtuniversity.nl
+Student ID number: i6377598
 
 ## Gemini Lite Client Program
 

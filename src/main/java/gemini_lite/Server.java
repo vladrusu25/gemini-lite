@@ -49,8 +49,7 @@ public class Server {
             String body = "Hello from my localhost server!\r\n";
 
             out.write((header + body).getBytes());
-            out.flush();
-        }
+            out.flush();        }
         finally {
             socket.close();
         }

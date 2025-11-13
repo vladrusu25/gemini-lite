@@ -6,7 +6,7 @@ import java.net.*;
 
 // run
 // java -cp target/bcs2110-2025.jar gemini_lite.Client gemini-lite://demo.svc.leastfixedpoint.nl/
-// java -cp target/bcs2110-2025.jar gemini_lite.Client gemini-lite://localhost
+// java -cp target/bcs2110-2025.jar gemini_lite.Client gemini-lite://localhost/
 public class Client {
     public static void main(String[] args) throws Throwable {
         if (args.length < 1) {
