@@ -89,4 +89,12 @@ public class Request {
         return new Request(normalizedUri);
     }
 
+    public void writeTo(OutputStream out) throws IOException {
+        String requestLine = uri.toString();
+        out.write(requestLine.getBytes(StandardCharsets.UTF_8));
+        out.write('\r');
+        out.write('\n');
+        out.flush();
+    }
+
 }

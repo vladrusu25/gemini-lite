@@ -27,19 +27,10 @@ public class Client {
         try (final var socket = new Socket(host, port)) {
             final var in = socket.getInputStream();
             final var out = socket.getOutputStream();
-            out.write((uri + "\r\n").getBytes());
-            out.flush();
-            try (final var r = new BufferedReader(new InputStreamReader(in))) {
-                final var rep = r.readLine();
-                if (rep != null && rep.startsWith("2")) {
-                    try (final var w = new PrintWriter(System.out)) {
-                        r.transferTo(w);
-                    }
-                } else {
-                    System.err.println(rep);
-                    System.exit(Integer.parseInt(rep.substring(0, 2)));
-                }
-            }
+
+            Request request = new Request(uri);
+            request.writeTo(out);
+
         }
     }
 }
