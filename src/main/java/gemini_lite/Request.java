@@ -5,13 +5,6 @@ import java.net.*;
 import java.nio.charset.StandardCharsets;
 
 public class Request {
-
-//    public static void main(String[] args) throws IOException {
-//        var good = "gemini-lite://localhost/\r\n".getBytes(java.nio.charset.StandardCharsets.UTF_8);
-//        var req = Request.parse(new java.io.ByteArrayInputStream(good));
-//        System.err.println("OK: " + req.getUri());
-//
-//    }
     private final URI uri;
     private static final int MAX_REQUEST_LENGTH = 1024;
     public Request(URI uri){
@@ -21,7 +14,12 @@ public class Request {
     public URI getUri(){
         return uri;
     }
-
+    /**
+     * Parses a gemini-lite request from the given InputStream.
+     * @param in the InputStream to read the request from
+     * @return a Request object containing the parsed URI
+     * @throws IOException if an I/O error occurs or if the request format is invalid
+     */
     static Request parse (InputStream in) throws IOException {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream(MAX_REQUEST_LENGTH);
         int byteCount =0;
@@ -102,6 +100,11 @@ public class Request {
         return new Request(normalizedUri);
     }
 
+    /**
+     * Writes the gemini-lite request to the given OutputStream.
+     * @param out the OutputStream to write the request to
+     * @throws IOException if an I/O error occurs
+     */
     public void writeTo(OutputStream out) throws IOException {
         String requestLine = uri.toString();
         out.write(requestLine.getBytes(StandardCharsets.UTF_8));

@@ -25,6 +25,10 @@ public class Server {
         this.port = port;
     }
 
+    /**
+     * Runs the server, listens for incoming connections.
+     * @throws IOException if an I/O error occurs
+     */
     public void run() throws IOException {
         try (final var server = new ServerSocket(port)) {
             System.err.println("Listening on port " + port);
@@ -35,7 +39,11 @@ public class Server {
 
         }
     }
-
+    /**
+     * Handles a single client connection.
+     * @param socket the client socket
+     * @throws IOException if an I/O error occurs
+     */
     public void handleConnection(Socket socket) throws IOException {
         try (socket) {
             InputStream in  = new BufferedInputStream(socket.getInputStream());

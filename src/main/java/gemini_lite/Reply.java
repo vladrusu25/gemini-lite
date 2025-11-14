@@ -22,6 +22,12 @@ public class Reply {
     public String getMeta() {return meta;}
     public InputStream getBody() {return body;}
 
+    /**
+   * Parses a Gemini reply from the given InputStream.
+   * @param in the InputStream to read the reply from
+   * @return a Reply object containing the status code, meta information, and body
+   * @throws IOException if an I/O error occurs or if the reply format is invalid
+     */
     public static Reply parse(InputStream in) throws IOException {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream(MAX_REPLY_LENGTH);
         int byteCount = 0;
@@ -77,6 +83,11 @@ public class Reply {
         return new Reply(status,meta,body);
     }
 
+    /**
+     * Writes the gemini-lite reply to the given OutputStream.
+     * @param out the OutputStream to write the reply to
+     * @throws IOException if an I/O error occurs
+     */
     public void writeTo(OutputStream out) throws IOException {
         String m = (meta == null) ? "" : meta;
         String header = String.format("%02d %s\r\n", statusCode, m);
@@ -86,6 +97,4 @@ public class Reply {
         }
         out.flush();
     }
-
-
 }
