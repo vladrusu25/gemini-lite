@@ -5,6 +5,13 @@ import java.net.*;
 import java.nio.charset.StandardCharsets;
 
 public class Request {
+
+//    public static void main(String[] args) throws IOException {
+//        var good = "gemini-lite://localhost/\r\n".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+//        var req = Request.parse(new java.io.ByteArrayInputStream(good));
+//        System.err.println("OK: " + req.getUri());
+//
+//    }
     private final URI uri;
     private static final int MAX_REQUEST_LENGTH = 1024;
     public Request(URI uri){
@@ -15,32 +22,38 @@ public class Request {
         return uri;
     }
 
-    static Request parse (InputStream in) throws IOException, ProtocolException {
+    static Request parse (InputStream in) throws IOException {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream(MAX_REQUEST_LENGTH);
-        int prev = -1;
         int byteCount =0;
-
+        boolean seenCR = false;
         while(true){
             int curr = in.read();
 
             if (curr == -1) {
                 throw new ProtocolException("CRLF not found before end of stream");
             }
-            if(prev == '\r'){
-                if(curr == '\n') break;
-                else throw new ProtocolException("Invalid line: expected LF after CR");
+
+            if(seenCR){
+                if(curr!= '\n'){
+                    throw new ProtocolException("Invalid line: expected LF after CR");
+                }
+                break;
             }
-            if(curr == '\n'){
-                throw new ProtocolException("Invalid line: CR expected before LF");
+
+            if(curr == '\r'){
+                seenCR = true;
+                continue;
             }
+            if (curr == '\n') {
+                throw new ProtocolException("Invalid line: LF without preceding CR");
+            }
+            if (byteCount == MAX_REQUEST_LENGTH) {
+                throw new ProtocolException("Request line too long (exceeds " + MAX_REQUEST_LENGTH + " bytes)");
+            }
+
 
             buffer.write(curr);
             byteCount++;
-
-            if(byteCount > MAX_REQUEST_LENGTH){
-                throw new ProtocolException("Request line too long (exceeds " + MAX_REQUEST_LENGTH + " bytes)");
-            }
-            prev = curr;
         }
 
         if(byteCount == 0){
@@ -48,7 +61,7 @@ public class Request {
         }
 
         String requestLine = buffer.toString(StandardCharsets.UTF_8);
-        URI uri = null;
+        URI uri;
         try {
             uri = new URI(requestLine);
         } catch (URISyntaxException e) {

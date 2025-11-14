@@ -31,6 +31,25 @@ public class Client {
             Request request = new Request(uri);
             request.writeTo(out);
 
+            Reply reply = Reply.parse(in);
+            int statusCode = reply.getStatusCode();
+
+            if(statusCode>=20 && statusCode<30) {
+                if(reply.getBody()!=null){
+                    reply.getBody().transferTo(System.out);
+                }
+                System.out.flush();
+                System.exit(0);
+            }
+            else if (statusCode >= 30 && statusCode < 40) {
+                System.err.println("Redirect to: " + reply.getMeta());
+                System.exit(statusCode);
+            } else if (statusCode >= 10 && statusCode < 20) {
+                System.err.println("Input requested: " + reply.getMeta());
+                System.exit(statusCode);
+            } else {
+                System.err.println(reply.getMeta());
+                System.exit(statusCode);
         }
     }
-}
+}}

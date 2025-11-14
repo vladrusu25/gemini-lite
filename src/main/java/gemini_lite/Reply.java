@@ -24,30 +24,33 @@ public class Reply {
 
     public static Reply parse(InputStream in) throws IOException {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream(MAX_REPLY_LENGTH);
-        int prev = -1;
-        int byteCount =0;
+        int byteCount = 0;
+        boolean sawCR = false;
 
-        while(true){
+        while (true) {
             int curr = in.read();
-
             if (curr == -1) {
                 throw new ProtocolException("CRLF not found before end of stream");
             }
-            if(prev == '\r'){
-                if(curr == '\n') break;
-                else throw new ProtocolException("Invalid line: expected LF after CR");
-            }
-            if(curr == '\n'){
-                throw new ProtocolException("Invalid line: CR expected before LF");
+
+            if (sawCR) {
+                if (curr != '\n') throw new ProtocolException("Invalid line: CR not followed by LF");
+                break;
             }
 
+            if (curr == '\r') {
+                sawCR = true;
+                continue;
+            }
+            if (curr == '\n') {
+                throw new ProtocolException("Invalid line: LF without preceding CR");
+            }
+
+            if (byteCount == MAX_REPLY_LENGTH) {
+                throw new ProtocolException("Reply header too long (exceeds " + MAX_REPLY_LENGTH + " bytes)");
+            }
             buffer.write(curr);
             byteCount++;
-
-            if(byteCount > MAX_REPLY_LENGTH){
-                throw new ProtocolException("Request line too long (exceeds " + MAX_REPLY_LENGTH + " bytes)");
-            }
-            prev = curr;
         }
 
         if(byteCount == 0){

@@ -37,22 +37,27 @@ public class Server {
     }
 
     public void handleConnection(Socket socket) throws IOException {
-        try {
-            var is_reader = new InputStreamReader(socket.getInputStream());
-            var in = new BufferedReader(is_reader);
-            var out = socket.getOutputStream();
+        try (socket) {
+            InputStream in  = new BufferedInputStream(socket.getInputStream());
+            OutputStream out = socket.getOutputStream();
 
-            String request = in.readLine();
-            System.err.println("Received request: " + request);
+            Request req;
+            try {
+                req = Request.parse(in);
+                System.err.println("Request for " + req.getUri());
+            } catch (java.net.ProtocolException pe) {
+                new Reply(59, "Bad request: " + pe.getMessage(), null).writeTo(out);
+                return;
+            } catch (IOException ioe) {
+                new Reply(50, "I/O error", null).writeTo(out);
+                return;
+            }
 
-            String header = "20 text/gemini\r\n";
-            String body = "Hello from my localhost server!\r\n";
+            byte[] bodyBytes = "Hello from my localhost server!\r\n".getBytes(java.nio.charset.StandardCharsets.UTF_8);
 
-            out.write((header + body).getBytes());
-            out.flush();        }
-        finally {
-            socket.close();
+            Reply ok = new Reply(20, "text/gemini", new ByteArrayInputStream(bodyBytes));
+            ok.writeTo(out);
         }
     }
-
 }
+
