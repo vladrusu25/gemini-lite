@@ -5,7 +5,7 @@ import java.net.*;
 public class Redirects {
     private Redirects(){}
 
-    static URI buildRedirect(URI currentUri, String target) throws ProtocolException, URISyntaxException {
+    public static URI buildRedirect(URI currentUri, String target) throws ProtocolException, URISyntaxException {
         if(target ==null || target.isEmpty()){
             throw new ProtocolException("Null/empty redirect target");
         }
