@@ -1,0 +1,108 @@
+[
+  {
+    "type": "client",
+    "name": "Status code with length different than two",
+    "url": "gemini-lite://localhost/",
+    "transactions": [
+      {
+        "reply": "999 LENGTH_TEST\r\n",
+        "url": "gemini-lite://localhost/"
+      }
+    ],
+    "exitcode": 1,
+    "stdout": "",
+    "justification": "In https://geminiprotocol.net/docs/tech-overview.gmi, section 3.1 (Gemini responses), it is specified : <STATUS> is a two-digit numeric status code. Handling this type of error is explained in the project manual, requirement 2: the client must not output anything to System.out, and must terminate with exit code 1."
+  },
+  {
+    "type": "client",
+    "name": "Meta longer than 1024 bytes",
+    "url": "gemini-lite://localhost/",
+    "transactions": [
+      {
+        "reply": "44 12341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341\r\n",
+        "url": "gemini-lite://localhost/"
+      }
+    ],
+    "exitcode": 1,
+    "stdout": "",
+    "justification": "In https://geminiprotocol.net/docs/tech-overview.gmi, section 3.1(Gemini responses), it is specified : <META> is a UTF-8 string with a maximum length of 1024 bytes. This test case has meta that contains 1025 bytes.In case the maximum length is exceeded, we consider it as a protocol violation and we handle it as stated in the project manual (same as testcase 1): no output in System.out and exit code 1."
+  },
+  {
+    "type": "client",
+    "name": "Invalid mimetype in success response",
+    "url": "gemini-lite://localhost/",
+    "transactions": [
+      {
+        "reply": "20 not_mime_at_all\r\nThis is not a valid mime",
+        "url": "gemini-lite://localhost/"
+      }
+    ],
+    "exitcode": 1,
+    "stdout": "",
+    "justification": "In https://geminiprotocol.net/docs/protocol-specification.gmi, section Responses, it is specified that for a successful response (2x), <META> must be a valid mimetype. In the same section, a valid mimetype is defined as type/subtype, where type and subtype are defined in RFC2045."
+  },
+  {
+    "type": "client",
+    "name": "CR not followed by LF in response header",
+    "url": "gemini-lite://localhost/",
+    "transactions": [
+      {
+        "reply": "20 text/plain\rmore_text\nShould end with CRLF",
+        "url": "gemini-lite://localhost/"
+      }
+    ],
+    "exitcode": 1,
+    "stdout": "",
+    "justification": "In https://geminiprotocol.net/docs/protocol-specification.gmi, section Responses, it is specified : 'A response header consists of ... always followed by a CR and LF'. This means that once CR is encountered, it must be followed by LF. In this test case, this rule is not respected, therefore we consider it a protocol violation and handle it according to the project manual requirement 2."
+  },
+  {
+    "type": "server",
+    "name": "URI longer than 1024 bytes",
+    "documents": {},
+    "request": "gemini-lite://localhost/12341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341\r\n",
+    "reply_regex": "^59( .*)?$",
+    "body": "",
+    "justification": "In https://geminiprotocol.net/docs/protocol-specification.gmi, section Requests, it is specified : 'When making a request, the URI MUST NOT exceed 1024 bytes, and a server MUST reject requests where the URI exceeds this limit.'. By reject, we mean responding with a 59 status code as per Permanent failure section from the same page."
+  },
+  {
+    "type": "server",
+    "name": "Request URI with fragment",
+    "documents": {},
+    "request": "gemini-lite://localhost/home#footer\r\n",
+    "reply_regex": "^59( .*)?$",
+    "body": "",
+    "justification": "In https://geminiprotocol.net/docs/protocol-specification.gmi, section Requests, it is specified : 'Clients MUST NOT send a fragment as part of the request, and a server MUST reject such requests.' By reject, we mean responding with a 59 status code as per Permanent failure section from the same page."
+  },
+  {
+    "type": "server",
+    "name": "Userinfo in request URI",
+    "documents": {},
+    "request": "gemini-lite://user:token@localhost/\r\n",
+    "reply_regex": "^59( .*)?$",
+    "body": "",
+    "justification": "In https://geminiprotocol.net/docs/protocol-specification.gmi, section Requests, it is specified : 'A server MUST reject a request with a userinfo portion.' This request includes userinfo ('user:token@'), so the server should reject it.Status code 59 is expected."
+  },
+  {
+    "type": "server",
+    "name": "Ignored data after CRLF in request",
+    "documents": {"README.gmi" : "Let's test it!"},
+    "request": "gemini-lite://localhost/README.gmi\r\nThis should be ignored",
+    "reply_regex": "^20 text/gemini.*$",
+    "body": "Let's test it!",
+    "justification": "In https://geminiprotocol.net/docs/tech-overview.gmi, section 2 (Gemini Requests) it is specified : ' ... servers MUST ignore anything sent after the first occurrence of a <CR><LF>'. Therefore, the server should process the request as if it were only 'gemini-lite://localhost/README.gmi\r\n' and return the corresponding document."
+  },
+  {
+    "type": "proxy",
+    "name": "Origin response doesn't end in CRLF -> proxy responds with 43",
+    "request": "gemini-lite://localhost/\r\n",
+    "server_transactions": [
+      {
+        "url": "gemini-lite://localhost/",
+        "reply": "20 text/plain\nThis response is missing CRLF at the end"
+      }
+    ],
+    "reply_regex": "^43( .*)?$",
+    "body": "",
+    "justification": "In https://geminiprotocol.net/docs/protocol-specification.gmi, section Responses, it is specified : A response header consists of...always followed by a CR and LF'. Therefore, in this example, the origin response is invalid because it does not end with CRLF. As per section Intermediaries : '...a proxy should return a response with status code 43 in situations including The proxy connected to an origin server and sent the request but origin server's response was malformed.' so we should respond with status code 43"
+  }
+]
