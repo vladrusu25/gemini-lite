@@ -103,11 +103,11 @@ public class Client {
     private static boolean isValidMimeType(String meta){
         if (meta == null || meta.isEmpty()) return false;
         String trimmed = meta.trim();
-        if(trimmed.equals(meta)) return false;
+        if(!trimmed.equals(meta)) return false;
 
-        int slashIndex = meta.indexOf('/');
-        if(slashIndex == -1|| slashIndex == trimmed.length()-1) return false;
-        if(meta.indexOf('/', slashIndex + 1) != -1) return false;
+        int slashIndex = trimmed.indexOf('/');
+        if(slashIndex <=0 || slashIndex == trimmed.length()-1) return false;
+        if(trimmed.indexOf('/', slashIndex + 1) != -1) return false;
 
         return true;
     }
