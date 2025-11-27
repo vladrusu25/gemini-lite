@@ -20,7 +20,7 @@ public class Request {
      * @return a Request object containing the parsed URI
      * @throws IOException if an I/O error occurs or if the request format is invalid
      */
-    static Request parse (InputStream in) throws IOException {
+    public static Request parse(InputStream in) throws IOException {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream(MAX_REQUEST_LENGTH);
         int byteCount =0;
         boolean seenCR = false;

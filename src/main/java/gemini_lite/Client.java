@@ -9,7 +9,7 @@ public class Client {
 
     public static void main(String[] args) throws Throwable {
         if (args.length < 1) {
-            System.err.println("You need to run with a URI argument : Client <uri> [<input>]");
+            System.err.println("You need to run : java -cp target/bcs2110-2025.jar gemini_lite.Client <uri> [<input>]");
             System.exit(1);
         }
 

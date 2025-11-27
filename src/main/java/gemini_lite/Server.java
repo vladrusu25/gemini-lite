@@ -1,71 +1,50 @@
 package gemini_lite;
 
-import java.io.*;
-import java.net.*;
+import gemini_lite.server.FileSystemRequestHandler;
+import gemini_lite.server.ServerIO;
 
-// in order to run in Windows powershell:
-// mvn clean package (this will create the updated jar if there are any updates)
-// java -cp target/bcs2110-2025.jar gemini_lite.Server
+import java.io.File;
+import java.io.IOException;
 
 public class Server {
+    private static final int DEFAULT_PORT = 1958;
+
     public static void main(String[] args) throws IOException {
-        final int PORT  = 1958;
-        try {
-            new Server(1958).run();
-        } catch (Throwable t) {
-            t.printStackTrace();
+        if (args.length < 1) {
+            System.err.println("You need to run : java -cp target/bcs2110-2025.jar gemini_lite.Server <directory> [port]");
             System.exit(1);
         }
 
-    }
-
-    private final int port;
-
-    public Server(int port) {
-        this.port = port;
-    }
-
-    /**
-     * Runs the server, listens for incoming connections.
-     * @throws IOException if an I/O error occurs
-     */
-    public void run() throws IOException {
-        try (final var server = new ServerSocket(port)) {
-            System.err.println("Listening on port " + port);
-            while (true) {
-                final var socket = server.accept();
-                handleConnection(socket);
-            }
-
-        }
-    }
-    /**
-     * Handles a single client connection.
-     * @param socket the client socket
-     * @throws IOException if an I/O error occurs
-     */
-    public void handleConnection(Socket socket) throws IOException {
-        try (socket) {
-            InputStream in  = new BufferedInputStream(socket.getInputStream());
-            OutputStream out = socket.getOutputStream();
-
-            Request req;
+        int port = DEFAULT_PORT;
+        if (args.length > 1) {
             try {
-                req = Request.parse(in);
-                System.err.println("Request for " + req.getUri());
-            } catch (java.net.ProtocolException pe) {
-                new Reply(59, "Bad request: " + pe.getMessage(), null).writeTo(out);
-                return;
-            } catch (IOException ioe) {
-                new Reply(50, "I/O error", null).writeTo(out);
-                return;
+                port = Integer.parseInt(args[1].trim());
+                if (port < 1 || port > 65535) throw new IllegalArgumentException();
+            } catch (Exception e) {
+                System.err.println("You need to run : java -cp target/bcs2110-2025.jar gemini_lite.Server <directory> [port]");
+                System.exit(1);
             }
+        }
 
-            byte[] bodyBytes = "Hello from my localhost server!\r\n".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        File rootDirectory;
+        try {
+            rootDirectory = new File(args[0]).getCanonicalFile();
+        } catch (IOException e) {
+            System.err.println("Invalid document root");
+            System.exit(1);
+            return;
+        }
+        if (!rootDirectory.exists() || !rootDirectory.isDirectory() || !rootDirectory.canRead()) {
+            System.err.println("Document root must be an existing, readable directory");
+            System.exit(1);
+        }
 
-            Reply ok = new Reply(20, "text/gemini", new ByteArrayInputStream(bodyBytes));
-            ok.writeTo(out);
+        try {
+            var handler = new FileSystemRequestHandler(rootDirectory);
+            new ServerIO(port,handler).start();
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
         }
     }
 }
-
