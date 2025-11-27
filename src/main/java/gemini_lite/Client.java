@@ -57,6 +57,10 @@ public class Client {
                         continue;
                     }
                     else if(status_class == 2) {
+                        String meta = reply.getMeta();
+                        if(!isValidMimeType(meta)){
+                            throw new ProtocolException("Invalid or missing mimetype");
+                        }
                         InputStream body = reply.getBody();
                         if (body != null) body.transferTo(System.out);
                         System.out.flush();
@@ -95,5 +99,16 @@ public class Client {
         } catch (Exception e) {
             System.exit(1);
         }
+    }
+    private static boolean isValidMimeType(String meta){
+        if (meta == null || meta.isEmpty()) return false;
+        String trimmed = meta.trim();
+        if(trimmed.equals(meta)) return false;
+
+        int slashIndex = meta.indexOf('/');
+        if(slashIndex == -1|| slashIndex == trimmed.length()-1) return false;
+        if(meta.indexOf('/', slashIndex + 1) != -1) return false;
+
+        return true;
     }
 }
