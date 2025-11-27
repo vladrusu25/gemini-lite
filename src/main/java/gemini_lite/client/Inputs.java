@@ -5,12 +5,10 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 
 public class Inputs {
+
     public static URI buildUri(URI currentUri, String meta, String input, boolean isSensitive) throws URISyntaxException {
         if (input == null || input.isEmpty()) {
             var console = System.console();
-            if (console == null) {
-                throw new IllegalStateException("No console available for input");
-            }
 
             if (meta == null || meta.isEmpty()) {
                 System.err.println("No meta provided for input request");
@@ -24,9 +22,9 @@ public class Inputs {
             if(input == null) input = "";
         }
 
-        String encoded = URLEncoder.encode(input, StandardCharsets.UTF_8);
-
-        return rebuildUri(currentUri,"query=" + encoded);
+        //String encoded = URLEncoder.encode(input, StandardCharsets.UTF_8);
+        //encoded = encoded.replace("+", "%20");
+        return rebuildUri(currentUri,"query=" + input);
     }
 
     private static URI rebuildUri(URI currentUri, String query) throws URISyntaxException {

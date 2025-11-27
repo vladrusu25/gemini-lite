@@ -11,7 +11,7 @@ public class Reply {
     private final int statusCode;
     private final String meta;
     private final InputStream body;
-    private static final int MAX_REPLY_LENGTH = 1024;
+    private static final int MAX_META_LENGTH = 1024;
     public Reply(int statusCode, String meta, InputStream body) {
         this.statusCode = statusCode;
         this.meta = meta;
@@ -29,8 +29,7 @@ public class Reply {
    * @throws IOException if an I/O error occurs or if the reply format is invalid
      */
     public static Reply parse(InputStream in) throws IOException {
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream(MAX_REPLY_LENGTH);
-        int byteCount = 0;
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         boolean sawCR = false;
 
         while (true) {
@@ -49,26 +48,18 @@ public class Reply {
                 continue;
             }
             if (curr == '\n') {
-                throw new ProtocolException("Invalid line: LF without preceding CR");
+                throw new ProtocolException("Invalid line: LF without CR");
             }
 
-            if (byteCount == MAX_REPLY_LENGTH) {
-                throw new ProtocolException("Reply header too long (exceeds " + MAX_REPLY_LENGTH + " bytes)");
-            }
             buffer.write(curr);
-            byteCount++;
         }
 
-        if(byteCount == 0){
-            throw new ProtocolException("Empty reply line");
-        }
         String replyLine = buffer.toString(StandardCharsets.UTF_8);
 
 
-        if(replyLine.length() < 3
+        if(replyLine.length() < 2
                 || !Character.isDigit(replyLine.charAt(0))
-                || !Character.isDigit(replyLine.charAt(1))
-                || replyLine.charAt(2) != ' '){
+                || !Character.isDigit(replyLine.charAt(1))){
             throw new ProtocolException("Invalid reply line format");
         }
 
@@ -76,7 +67,19 @@ public class Reply {
         if (status <10 || status >=60) {
             throw new ProtocolException("Invalid status code: " + status);
         }
-        String meta = replyLine.substring(3);
+
+        String meta;
+        if(replyLine.length()==2) meta = "";
+        else if(replyLine.charAt(2) == ' '){
+            meta = replyLine.substring(3);
+        }
+        else {
+            throw new ProtocolException("Missing space after status code in reply line");
+        }
+
+        if(meta.getBytes(StandardCharsets.UTF_8).length > MAX_META_LENGTH){
+            throw new ProtocolException("Meta too long");
+        }
         InputStream body = null;
         if(status >=20 && status <30){
             body = in;

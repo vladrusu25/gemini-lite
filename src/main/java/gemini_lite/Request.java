@@ -49,7 +49,6 @@ public class Request {
                 throw new ProtocolException("Request line too long (exceeds " + MAX_REQUEST_LENGTH + " bytes)");
             }
 
-
             buffer.write(curr);
             byteCount++;
         }
@@ -66,6 +65,9 @@ public class Request {
             throw new ProtocolException("Invalid URI syntax: " + e.getMessage());
         }
 
+        if(!uri.isAbsolute()) {
+            throw new ProtocolException("URI must be absolute");
+        }
         if(uri.getScheme() == null || !uri.getScheme().equalsIgnoreCase("gemini-lite")){
             throw new ProtocolException("Expected 'gemini-lite' scheme");
         }
@@ -95,7 +97,11 @@ public class Request {
                 null
             );
         } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+            throw new ProtocolException("Invalid URI syntax after normalization");
+        }
+
+        if(normalizedUri.toString().getBytes(StandardCharsets.UTF_8).length > MAX_REQUEST_LENGTH){
+            throw new ProtocolException("Request url too long");
         }
         return new Request(normalizedUri);
     }
@@ -106,8 +112,12 @@ public class Request {
      * @throws IOException if an I/O error occurs
      */
     public void writeTo(OutputStream out) throws IOException {
-        String requestLine = uri.toString();
-        out.write(requestLine.getBytes(StandardCharsets.UTF_8));
+        byte[] uriBytes = uri.toString().getBytes(StandardCharsets.UTF_8);
+        if(uriBytes.length > MAX_REQUEST_LENGTH){
+            throw new ProtocolException("Request URI too long ");
+        }
+
+        out.write(uriBytes);
         out.write('\r');
         out.write('\n');
         out.flush();
