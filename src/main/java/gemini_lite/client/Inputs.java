@@ -1,8 +1,7 @@
 package gemini_lite.client;
 
 import java.net.*;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+
 
 public class Inputs {
 
@@ -22,8 +21,6 @@ public class Inputs {
             if(input == null) input = "";
         }
 
-        //String encoded = URLEncoder.encode(input, StandardCharsets.UTF_8);
-        //encoded = encoded.replace("+", "%20");
         return rebuildUri(currentUri,input);
     }
 
