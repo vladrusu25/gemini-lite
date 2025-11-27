@@ -11,7 +11,7 @@ public class Inputs {
             var console = System.console();
 
             if (meta == null || meta.isEmpty()) {
-                System.err.println("No meta provided for input request");
+                System.err.println(meta);
             }
 
             if (isSensitive) {
@@ -24,7 +24,7 @@ public class Inputs {
 
         //String encoded = URLEncoder.encode(input, StandardCharsets.UTF_8);
         //encoded = encoded.replace("+", "%20");
-        return rebuildUri(currentUri,"query=" + input);
+        return rebuildUri(currentUri,input);
     }
 
     private static URI rebuildUri(URI currentUri, String query) throws URISyntaxException {
