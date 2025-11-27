@@ -9,7 +9,7 @@ import java.net.*;
 public class Client {
 
     private static final int DEFAULT_PORT = 1958;
-    private static final int MAX_REDIRECTS = 10;
+    private static final int MAX_REDIRECTS = 5;
     private static final int MAX_SLOWDOWN = 60;
     public static void main(String[] args) throws Throwable {
         if (args.length < 1) {
@@ -92,8 +92,8 @@ public class Client {
                     }
                 }
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            System.exit(1);
         }
     }
 }

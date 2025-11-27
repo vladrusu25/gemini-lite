@@ -64,11 +64,12 @@ public class Reply {
         }
         String replyLine = buffer.toString(StandardCharsets.UTF_8);
 
+
         if(replyLine.length() < 3
                 || !Character.isDigit(replyLine.charAt(0))
                 || !Character.isDigit(replyLine.charAt(1))
-                || replyLine.charAt(2) !=' '){
-            throw new ProtocolException("Invalid reply line format: Expected 'DD meta'");
+                || replyLine.charAt(2) != ' '){
+            throw new ProtocolException("Invalid reply line format");
         }
 
         int status = Integer.parseInt(replyLine.substring(0,2));
