@@ -6,8 +6,10 @@ import gemini_lite.Reply;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.ProtocolException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 public class ServerIO {
     private final int port;
@@ -49,15 +51,19 @@ public class ServerIO {
                 if (reply == null) {
                     reply = new Reply(50, "Server error occurred", null);
                 }
-            } catch (Exception e) {
+            } catch (ProtocolException e) {
+                reply = new Reply(59, "Bad request", null);
+            } catch (SocketTimeoutException e) {
+                reply = new Reply(59, "Bad request", null);
+            }catch (Exception e) {
                 reply = new Reply(50, "Server error occurred", null);
             }
 
             try {
                 reply.writeTo(out);
-            } catch (IOException ignored) {
+            } catch (IOException e) {
             }
-        } catch (IOException ignored) {
+        } catch (IOException e) {
 
         }
     }
