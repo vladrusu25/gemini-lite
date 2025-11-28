@@ -77,6 +77,9 @@ public class Request {
         if(uri.getFragment() != null){
             throw new ProtocolException("Request cannot contain fragment");
         }
+        if(uri.getUserInfo() != null){
+            throw new ProtocolException("Request cannot contain user info");
+        }
 
         String path;
         if(uri.getPath() == null || uri.getPath().isEmpty()){
