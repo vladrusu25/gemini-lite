@@ -20,7 +20,11 @@ public class Client {
         final var uri = new URI(args[0]);
 
         try {
-            new ClientEngine().run(uri, input);
+            boolean isProxy = false;
+            Reply reply = new ClientEngine().run(uri,input,isProxy,System.out);
+            int status_code = reply.getStatusCode();
+            if(status_code >=40 && status_code<=59) System.exit(status_code);
+            else System.exit(0);
         } catch (Exception e) {
             System.exit(1);
         }

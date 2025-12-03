@@ -3,7 +3,7 @@ package gemini_lite.client;
 import gemini_lite.Reply;
 import gemini_lite.Request;
 
-import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.ProtocolException;
 import java.net.Socket;
 import java.net.URI;
@@ -14,8 +14,22 @@ public class ClientEngine {
     private static final int MAX_REDIRECTS = 5;
     private static final int MAX_SLOWDOWN = 60;
 
-    public void run(URI uri, String cliInput) throws Exception {
+    public Reply run(URI uri, String cliInput, boolean isProxy, OutputStream out) throws Exception {
         UriUtil.validateUri(uri);
+
+        String proxyHost = null;
+        Integer proxyPort = null;
+
+        if(!isProxy) {
+            String env_var = System.getenv("GEMINI_LITE_PROXY");
+            if(env_var != null) {
+                String[] env_parts = env_var.split(":",2);
+                if(env_parts.length == 2) {
+                    proxyHost = env_parts[0];
+                    proxyPort = Integer.parseInt(env_parts[1]);
+                }
+            }
+        }
 
         String input = cliInput;
         boolean inputUsed = false;
@@ -26,8 +40,17 @@ public class ClientEngine {
         URI currentUri = uri;
 
         while (true) {
-            String host = UriUtil.hostOf(currentUri);
-            int port = UriUtil.portOf(currentUri, DEFAULT_PORT);
+            String host;
+            int port;
+            if(!isProxy && proxyHost != null && proxyPort != null ){
+                host = proxyHost;
+                port = proxyPort;
+            }
+            else{
+                host = UriUtil.hostOf(currentUri);
+                port = UriUtil.portOf(currentUri, DEFAULT_PORT);
+            }
+
 
             String origin = host + ":" + port;
             if (!origin.equals(backoffOrigin)) {
@@ -37,10 +60,10 @@ public class ClientEngine {
 
             try (Socket socket = new Socket(host, port)) {
                 var in  = socket.getInputStream();
-                var out = socket.getOutputStream();
+                var socketOut = socket.getOutputStream();
 
                 Request request = new Request(currentUri);
-                request.writeTo(out);
+                request.writeTo(socketOut);
 
                 Reply reply = Reply.parse(in);
                 int status_code  = reply.getStatusCode();
@@ -48,6 +71,10 @@ public class ClientEngine {
 
                 if (status_class == 1) {
                     backoff_seconds =0;
+
+                    if(isProxy){
+                        return reply;
+                    }
 
                     boolean isSensitive = (status_code == 11);
                     String meta = reply.getMeta();
@@ -68,10 +95,12 @@ public class ClientEngine {
                     if (!MimeUtil.isValidMimeType(meta)) {
                         throw new ProtocolException("Invalid or missing mimetype");
                     }
-                    InputStream body = reply.getBody();
-                    if (body != null) body.transferTo(System.out);
-                    System.out.flush();
-                    System.exit(0);
+                    var body = reply.getBody();
+                    if(body != null){
+                        body.transferTo(out);
+                    }
+                    out.flush();
+                    return reply;
                 }
                 else if (status_class == 3) {
                     backoff_seconds =0;
@@ -108,13 +137,19 @@ public class ClientEngine {
 
                     backoff_seconds =0;
 
-                    System.err.println(reply.getMeta());
-                    System.exit(status_code);
+                    if(!isProxy) {
+                        reply.writeTo(out);
+                        out.flush();
+                    }
+                    return reply;
                 }
                 else if (status_class == 5) {
                     backoff_seconds =0;
-                    System.err.println("Server error: " + reply.getMeta());
-                    System.exit(status_code);
+                    if(!isProxy) {
+                        reply.writeTo(out);
+                        out.flush();
+                    }
+                    return reply;
                 }
                 else {
                     throw new ProtocolException("Unknown status code class: " + status_code);
