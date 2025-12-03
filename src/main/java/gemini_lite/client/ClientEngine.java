@@ -137,18 +137,11 @@ public class ClientEngine {
 
                     backoff_seconds =0;
 
-                    if(!isProxy) {
-                        reply.writeTo(out);
-                        out.flush();
-                    }
                     return reply;
                 }
                 else if (status_class == 5) {
                     backoff_seconds =0;
-                    if(!isProxy) {
-                        reply.writeTo(out);
-                        out.flush();
-                    }
+
                     return reply;
                 }
                 else {
