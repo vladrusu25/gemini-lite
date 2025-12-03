@@ -20,12 +20,20 @@ public class ClientEngine {
         String input = cliInput;
         boolean inputUsed = false;
 
+        int backoff_seconds =0;
+        String backoffOrigin = null;
         int redirect_count = 0;
         URI currentUri = uri;
 
         while (true) {
             String host = UriUtil.hostOf(currentUri);
             int port = UriUtil.portOf(currentUri, DEFAULT_PORT);
+
+            String origin = host + ":" + port;
+            if (!origin.equals(backoffOrigin)) {
+                backoffOrigin = origin;
+                backoff_seconds = 0;
+            }
 
             try (Socket socket = new Socket(host, port)) {
                 var in  = socket.getInputStream();
@@ -39,6 +47,8 @@ public class ClientEngine {
                 int status_class = status_code / 10;
 
                 if (status_class == 1) {
+                    backoff_seconds =0;
+
                     boolean isSensitive = (status_code == 11);
                     String meta = reply.getMeta();
 
@@ -48,9 +58,12 @@ public class ClientEngine {
                         inputUsed = true;
                     }
                     currentUri = Inputs.buildUri(currentUri, meta, pendingInput, isSensitive);
+
                     continue;
                 }
                 else if (status_class == 2) {
+                    backoff_seconds =0;
+
                     String meta = reply.getMeta();
                     if (!MimeUtil.isValidMimeType(meta)) {
                         throw new ProtocolException("Invalid or missing mimetype");
@@ -61,6 +74,8 @@ public class ClientEngine {
                     System.exit(0);
                 }
                 else if (status_class == 3) {
+                    backoff_seconds =0;
+
                     currentUri = Redirects.buildRedirect(currentUri, reply.getMeta());
                     redirect_count++;
                     if (redirect_count > MAX_REDIRECTS) {
@@ -69,18 +84,35 @@ public class ClientEngine {
                     continue;
                 }
                 else if (status_class == 4) {
+                    //handle exponential backoff time for status code 44
                     if (status_code == 44) {
-                        int seconds = UriUtil.parsePositiveInt(reply.getMeta(), 1);
-                        if (seconds > MAX_SLOWDOWN) seconds = MAX_SLOWDOWN;
+                        int suggested_backoff_seconds = UriUtil.parsePositiveInt(reply.getMeta(), 1);
+
+                        if (backoff_seconds == 0) {
+                            backoff_seconds = Math.min(suggested_backoff_seconds, MAX_SLOWDOWN);
+                        }
+                        else {
+                            backoff_seconds = Math.max(
+                                    suggested_backoff_seconds,
+                                    Math.min(MAX_SLOWDOWN, backoff_seconds * 2)
+                            );
+                        }
                         try {
-                            Thread.sleep(seconds * 1000L);
-                        } catch (InterruptedException ignored) { }
+                            Thread.sleep(backoff_seconds * 1000L);
+                        }catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            throw e;
+                        }
                         continue;
                     }
+
+                    backoff_seconds =0;
+
                     System.err.println(reply.getMeta());
                     System.exit(status_code);
                 }
                 else if (status_class == 5) {
+                    backoff_seconds =0;
                     System.err.println("Server error: " + reply.getMeta());
                     System.exit(status_code);
                 }
