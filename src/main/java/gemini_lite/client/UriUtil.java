@@ -40,6 +40,8 @@ public final class UriUtil {
             throw new ProtocolException("Host is missing");
         if (uri.getFragment() != null)
             throw new ProtocolException("Fragment not allowed");
+        if (uri.getUserInfo() != null)
+            throw new ProtocolException("User info not allowed");
         if (uri.toString().getBytes(StandardCharsets.UTF_8).length > MAX_REQUEST_BYTES)
             throw new ProtocolException("URL too long");
     }
