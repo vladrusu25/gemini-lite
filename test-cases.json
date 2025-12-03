@@ -104,5 +104,19 @@
     "reply_regex": "^43( .*)?$",
     "body": "",
     "justification": "In https://geminiprotocol.net/docs/protocol-specification.gmi, section Responses, it is specified : A response header consists of...always followed by a CR and LF'. Therefore, in this example, the origin response is invalid because it does not end with CRLF. As per section Intermediaries : '...a proxy should return a response with status code 43 in situations including The proxy connected to an origin server and sent the request but origin server's response was malformed.' so we should respond with status code 43"
+  },
+  {
+    "type": "proxy",
+    "name": "Relay input request to client",
+    "request": "gemini-lite://localhost/1x_relay_to_client\r\n",
+    "server_transactions": [
+      {
+        "url": "gemini-lite://localhost/1x_relay_to_client",
+        "reply": "10 Input required\r\n"
+      }
+    ],
+    "reply_regex": "^10 Input required$",
+    "body": "",
+    "justification": "Requirement 4 states input replies cannot be handled by the proxy and must be relayed to the client. Here the origin responds with status 10 (input) and META 'Input required'. The proxy must forward exactly that 1x header and no body."
   }
 ]
