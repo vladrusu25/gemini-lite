@@ -35,6 +35,7 @@ public class Redirects {
         if(newUri.getFragment()!=null){
             throw new ProtocolException("Redirect target cannot contain fragment");
         }
+        UriUtil.validateUri(newUri);
         return newUri;
     }
 }

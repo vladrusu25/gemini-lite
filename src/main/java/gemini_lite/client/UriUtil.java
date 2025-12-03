@@ -1,6 +1,7 @@
 package gemini_lite.client;
 
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 
 public final class UriUtil {
     private UriUtil() {}
@@ -27,5 +28,19 @@ public final class UriUtil {
         } catch (NumberFormatException e) {
             return defaultVal;
         }
+    }
+
+    public static void validateUri(URI uri) throws ProtocolException {
+        int MAX_REQUEST_BYTES = 1024;
+        if (uri == null || !uri.isAbsolute())
+            throw new ProtocolException("URI must be absolute");
+        if (uri.getScheme() == null || !"gemini-lite".equalsIgnoreCase(uri.getScheme()))
+            throw new ProtocolException("Expected gemini-lite scheme");
+        if (uri.getHost() == null)
+            throw new ProtocolException("Host is missing");
+        if (uri.getFragment() != null)
+            throw new ProtocolException("Fragment not allowed");
+        if (uri.toString().getBytes(StandardCharsets.UTF_8).length > MAX_REQUEST_BYTES)
+            throw new ProtocolException("URL too long");
     }
 }

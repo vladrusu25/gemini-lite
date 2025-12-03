@@ -15,6 +15,8 @@ public class ClientEngine {
     private static final int MAX_SLOWDOWN = 60;
 
     public void run(URI uri, String cliInput) throws Exception {
+        UriUtil.validateUri(uri);
+
         String input = cliInput;
         boolean inputUsed = false;
 

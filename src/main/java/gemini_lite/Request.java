@@ -1,5 +1,7 @@
 package gemini_lite;
 
+import gemini_lite.client.UriUtil;
+
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
@@ -65,21 +67,22 @@ public class Request {
             throw new ProtocolException("Invalid URI syntax: " + e.getMessage());
         }
 
-        if(!uri.isAbsolute()) {
-            throw new ProtocolException("URI must be absolute");
-        }
-        if(uri.getScheme() == null || !uri.getScheme().equalsIgnoreCase("gemini-lite")){
-            throw new ProtocolException("Expected 'gemini-lite' scheme");
-        }
-        if(uri.getHost() == null){
-            throw new ProtocolException("Host is missing");
-        }
-        if(uri.getFragment() != null){
-            throw new ProtocolException("Request cannot contain fragment");
-        }
-        if(uri.getUserInfo() != null){
-            throw new ProtocolException("Request cannot contain user info");
-        }
+        UriUtil.validateUri(uri);
+//        if(!uri.isAbsolute()) {
+//            throw new ProtocolException("URI must be absolute");
+//        }
+//        if(uri.getScheme() == null || !uri.getScheme().equalsIgnoreCase("gemini-lite")){
+//            throw new ProtocolException("Expected 'gemini-lite' scheme");
+//        }
+//        if(uri.getHost() == null){
+//            throw new ProtocolException("Host is missing");
+//        }
+//        if(uri.getFragment() != null){
+//            throw new ProtocolException("Request cannot contain fragment");
+//        }
+//        if(uri.getUserInfo() != null){
+//            throw new ProtocolException("Request cannot contain user info");
+//        }
 
         String path;
         if(uri.getPath() == null || uri.getPath().isEmpty()){
