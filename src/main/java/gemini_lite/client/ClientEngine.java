@@ -14,6 +14,7 @@ public class ClientEngine {
     private static final int MAX_REDIRECTS = 5;
     private static final int MAX_SLOWDOWN = 60;
 
+
     public Reply run(URI uri, String cliInput, boolean isProxy, OutputStream out) throws Exception {
         UriUtil.validateUri(uri);
 
@@ -85,8 +86,6 @@ public class ClientEngine {
                         inputUsed = true;
                     }
                     currentUri = Inputs.buildUri(currentUri, meta, pendingInput, isSensitive);
-
-                    continue;
                 }
                 else if (status_class == 2) {
                     backoff_seconds =0;
@@ -110,7 +109,6 @@ public class ClientEngine {
                     if (redirect_count > MAX_REDIRECTS) {
                         throw new ProtocolException("Too many redirects");
                     }
-                    continue;
                 }
                 else if (status_class == 4) {
                     //handle exponential backoff time for status code 44
@@ -134,14 +132,9 @@ public class ClientEngine {
                         }
                         continue;
                     }
-
-                    backoff_seconds =0;
-
                     return reply;
                 }
                 else if (status_class == 5) {
-                    backoff_seconds =0;
-
                     return reply;
                 }
                 else {

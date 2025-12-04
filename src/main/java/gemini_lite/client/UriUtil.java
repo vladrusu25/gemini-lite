@@ -32,9 +32,10 @@ public final class UriUtil {
 
     public static void validateUri(URI uri) throws ProtocolException {
         int MAX_REQUEST_BYTES = 1024;
+        String accepted_uri_scheme = "gemini-lite";
         if (uri == null || !uri.isAbsolute())
             throw new ProtocolException("URI must be absolute");
-        if (uri.getScheme() == null || !"gemini-lite".equalsIgnoreCase(uri.getScheme()))
+        if (uri.getScheme() == null || !accepted_uri_scheme.equalsIgnoreCase(uri.getScheme()))
             throw new ProtocolException("Expected gemini-lite scheme");
         if (uri.getHost() == null)
             throw new ProtocolException("Host is missing");
